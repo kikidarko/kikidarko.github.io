@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+
+<head>
+  <title>Kiki Regan — Skills</title>
+  <link rel="stylesheet" type="text/css" href="kikiweb.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+  <div class="topnav" id="myTopnav">
+    <a href="index.html">home</a>
+    <a href="skills.html" class="selected">skills</a>
+    <a href="creative.html">creative</a>
+    <a href="contact.html">contact</a>
+    <!--<i>)<a href="secrets.html">secrets</a></i>-->
+    <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+      <i class="fa fa-bars"></i>
+    </a>
+  </div>
+
+
+  <script>
+  function myFunction() {
+    var x = document.getElementById("myTopnav");
+    if (x.className === "topnav") {
+      x.className += " responsive";
+    } else {
+      x.className = "topnav";
+    }
+  }
+  </script>
+
+  <img id="banner" src="http://web.simmons.edu/~regan1/CS110/banner-img" alt="abstract banner image">
+  <img id="banner-mobile" src="http://web.simmons.edu/~regan1/CS110/banner-img-2-mobile" alt="abstract banner image">
+
+<div id="main">
+<h1 id="heading">Skills<h1>
+
+<div class="container">
+  <div id="skill1" class="skills">
+    <h2>Technical</h2>
+      <p>
+        Photoshop<br>
+        InDesign<br>
+        CRM Platforms <!--<i>(Network for Good, Keela)</i>--><br>
+        Google Workspace<br>
+        Microsoft Office Suite<br>
+        WordPress<br>
+        Domain Management<br>
+        Linux/Command Line<br>
+    </p>
+</div>
+
+<div id="skill2" class="skills">
+<h2>Languages</h2>
+  <p>
+    Java<br>
+    Python<br>
+    R<br>
+    Scala<br>
+    HTML/CSS<br>
+    Javascript<br>
+  </p>
+</div>
+</div>
+
+</div>
+</body>
