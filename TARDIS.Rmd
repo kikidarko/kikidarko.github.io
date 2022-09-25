@@ -1,0 +1,380 @@
+---
+title: "T.A.R.D.I.S.: Tutorial for Awesome and Real Data InvestigationS"
+author: "Kiki Regan"
+date: "April 1, 2022"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow-skip: true
+runtime: shiny_prerendered
+---
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+# Load any R Packages you may need
+library(tidyverse)
+library(learnr)
+library(ggthemr)
+library(ggridges)
+gradethis::gradethis_setup()
+
+#install.packages("remotes")
+#remotes::install_github("rstudio/learnr")
+#remotes::install_github("rstudio/gradethis")
+```
+
+```{r setup, echo=FALSE, warning = FALSE, message = FALSE}
+# Load any datasets you may need
+directors <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-11-23/directors.csv')
+episodes <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-11-23/episodes.csv')
+writers <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-11-23/writers.csv')
+imdb <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-11-23/imdb.csv')
+```
+
+```{r prepare-drwhoavg}
+drwho_comp = directors %>% 
+  full_join(episodes, by = "story_number")
+
+drwho_comp = drwho_comp %>% 
+  full_join(writers, by = "story_number")
+
+# First, the 3 incorrect episodes are fixed
+drwho_comp$episode_number[drwho_comp$story_number == 231] <- 6 # change ep number from NA to 6
+drwho_comp$episode_number[drwho_comp$story_number == 263] <- 13 # change ep number from NA to 13
+drwho_comp$season_number[drwho_comp$story_number == 276] <- 11 # change season number from 10 to 11
+
+# Now we can replace all NA values in `episode_number` with 0 (these are the Christmas specials, recorded as episode 0 in `imdb`)
+drwho_comp$episode_number[is.na(drwho_comp$episode_number)] <- 0
+
+# add the season and episode column to `drwho_comp`
+drwho_comp = drwho_comp %>% 
+  mutate(season_and_ep = str_c(season_number, episode_number, sep = "-"))
+
+# add the season and episode column to `imdb`
+imdb = imdb %>% 
+  mutate(season_and_ep = str_c(season, ep_num, sep = "-"))
+
+drwho_comp = drwho_comp %>% 
+  full_join(imdb, by = "season_and_ep")
+
+# add a new column to store each of the doctors' names
+drwho_comp$doctor <- c("")
+
+# assign each name to each season or set of seasons
+drwho_comp$doctor[drwho_comp$season == 1] <- "Christopher Eccleston"
+drwho_comp$doctor[drwho_comp$season %in% c(2:4)] <- "David Tennant" 
+drwho_comp$doctor[drwho_comp$season %in% c(5:7)] <- "Matt Smith" 
+drwho_comp$doctor[drwho_comp$season %in% c(8:10)] <- "Peter Capaldi" 
+drwho_comp$doctor[drwho_comp$season %in% c(11:13)] <- "Jodi Whittaker" 
+```
+
+## Welcome!
+
+Let's talk about **data wrangling**! For this tutorial, we'll analyze one of the greatest datasets ever to grace TidyTuesday... **Doctor Who**!! 
+
+*Doctor Who*, a British television *programme* that aires on BBC, is one of the most popular sci-fi series in history. This tutorial will use Jonathan Kitt's `datardis` package from TidyTuesday (you can find it [here](https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-11-23/readme.md)) to walk through some important data wrangling methods. 
+
+A quick note about this package is that it only contains information from the new *Doctor Who* series that began in 2005. To be honest, I haven't seen much of the original series anyway, but once I get around to it I'll find a dataset that includes it and analyze *that!*
+
+Let's **wrangle this data**!
+
+![](https://media.giphy.com/media/KFVVQfYK2C1lj9Tw8r/giphy.gif)
+
+## Initial peek at the data 
+
+Let's start off by seeing what we're working with.
+
+This package is comprised of a few different datasets: `directors`; `episodes`; `writers`; and `imdb`. Each of these contains slightly different information about Doctor Who. Let's look at the column names for each one and see what information could be most useful or interesting to us.
+
+```{r, warning=FALSE, message=FALSE}
+colnames(directors)
+colnames(episodes)
+colnames(writers)
+colnames(imdb)
+```
+
+```{r, eval = FALSE, echo = FALSE}
+View(directors)
+View(episodes)
+View(writers)
+View(imdb)
+```
+
+
+It looks like there's a lot of good info in here, but to be honest, I find juggling four different datasets really overwhelming. From this, I can see that although they each contain different information, `story_number` is consistent for all but the `imdb` dataset. What if we join them all into one, starting with the `story_number` column? 
+
+## Joining datasets 
+
+I'm going to use `full_join()` here to avoid losing any data. This type of join returns **all** rows, regardless of a match. This is a great join to use if you're worried about losing data. There are plenty of other `join` functions that prioritize a "master" dataset but we'll keep it simple and stick with `full_join()`.
+
+Because `story_number` is unique to each episode (even stories that span over multiple episodes are distinguished by *a, b, c*, etc. after each story number) we shouldn't have an issue with lost data but it's good to keep things safe.
+
+Let's call our new dataset `drwho_comp`. First, I'll join the `directors` and `episode` datsets by their `story_number` column:
+
+```{r drwho-setup}
+drwho_comp = directors %>% 
+  full_join(episodes, by = "story_number")
+
+drwho_comp
+```
+
+
+Ok, looking good! We still have 172 rows (as many episodes of Doctor Who there are as of 2021) and we haven't lost any columns, either. 
+
+### Exercise 1: First join
+
+**Your turn**: can you try joining our new `drwho_comp` dataset with the `writers` dataset by `story_number`?
+```{r join1, exercise = TRUE, exercise.setup = "drwho-setup"}
+drwho_comp = drwho_comp %>% 
+  full_join(___)
+```
+
+```{r join1-solution}
+drwho_comp = drwho_comp %>% 
+  full_join(writers, by = "story_number")
+```
+
+```{r join1-code-check}
+grade_code()
+```
+
+
+### Exercise 2: Second join
+
+Since we joined `writers` to `drwho_comp`, you might have noticed that we actually *gained* a few rows. This is because a few episodes had **multiple authors**. Fortunately, this keeps our data in the **long format** (the easier way to work with data: if data can be stored as either a row or a column, storing it in rows is much better to work with!) and doesn't disrupt anything. Still, it's good to keep in mind as we continue working with this dataset.
+
+For our final join, we want to include `imdb` in our `drwho_comp` dataset. Unfortunately, `imdb` doesn't have the `story_number` column like the other three datasets. Let's take another peek at the column names and see what we can use:
+
+```{r, include = FALSE}
+drwho_comp = drwho_comp %>% 
+  full_join(writers, by = "story_number")
+```
+
+```{r, warning=FALSE, message=FALSE}
+colnames(drwho_comp)
+colnames(imdb)
+```
+
+```{r join-q, echo = FALSE}
+question("What information in `imdb` do you think we can use to join it with `drwho_comp`?",
+         answer("rating", message = "Not quite; think about something that `drwho_comp` and `imdb` have in common."),
+         answer("episode number", correct = TRUE),
+         answer("air date", message = "Close. Air date might not be the exact same for each episode, however, so we might want to count on something more reliable that definitely won't change."),
+         answer("rating_n (number of ratings)", message = "Not quite; think about something that `drwho_comp` and `imdb` have in common."),
+         correct = "Correct! Although these variables have different names, they contain the same information.",
+         allow_retry = TRUE)
+```
+
+### Final join: when columns don't match!
+
+The best way that we can join `drwho_comp` and `imdb` is probably by **specific episode**. Unfortunately, `epsiode_number` and `season` are different columns in both of these datasets; episode 1 can appear many times because there will always be one "episode 1" for each season! To join these two datasets, we need to **create a new column** that contains season *and* episode number. To do this, we'll use the `mutate()` function from the `dplyr` package as well as `str_c()` from the `stringr` package.
+
+We can use `mutate()` to **add a new column** to each of our datasets. `str_c()` will be used to **combine** the `season_number` and `episode_number` columns into one single `season_and_ep` column.
+
+**Note**: In the `drwho_comp` dataset, 4 episodes were input incorrectly. Those are also fixed below. Next, because episode 0 was consistently recorded as `NA`, I replaced all of those with 0.
+
+```{r, warning=FALSE, message=FALSE}
+# First, the 3 incorrect episodes are fixed
+drwho_comp$episode_number[drwho_comp$story_number == 231] <- 6 # change ep number from NA to 6
+drwho_comp$episode_number[drwho_comp$story_number == 263] <- 13 # change ep number from NA to 13
+drwho_comp$season_number[drwho_comp$story_number == 276] <- 11 # change season number from 10 to 11
+
+# Now we can replace all NA values in `episode_number` with 0 (these are the Christmas specials, recorded as episode 0 in `imdb`)
+drwho_comp$episode_number[is.na(drwho_comp$episode_number)] <- 0
+
+# add the season and episode column to `drwho_comp`
+drwho_comp = drwho_comp %>% 
+  mutate(season_and_ep = str_c(season_number, episode_number, sep = "-"))
+
+# add the season and episode column to `imdb`
+imdb = imdb %>% 
+  mutate(season_and_ep = str_c(season, ep_num, sep = "-"))
+```
+
+Now let's `join()`!
+
+```{r, warning=FALSE, message=FALSE}
+drwho_comp = drwho_comp %>% 
+  full_join(imdb, by = "season_and_ep")
+
+drwho_comp
+```
+
+Ok, now we *finally* have all four datasets in one. As I mentioned before, it's really nice to have everything in one place. We're now free to mess around with everything!
+
+
+## Working with our fancy new dataset!
+
+At this point, our `drwho_comp` dataset contains all of the information from each of the four initial datasets that we started with. Let's start visualizing some data to start understanding it!
+
+### Which season has the best ratings?
+
+Let's look at the show's ratings across the seasons. Below is a **scatterplot** that includes data from each episode.
+
+```{r, message = FALSE, warning = FALSE}
+drwho_comp %>% 
+  ggplot(aes(x = season_and_ep, y = rating.y)) +
+  geom_point() 
+```
+
+Oof. That's an overwhelming graph. I don't even know what the x-axis says or whether it's in order or anything! What can we do to improve this graph?
+
+```{r scatter-q, echo = FALSE}
+question("What could we do to this graph to make it look better?",
+         answer("look at rating.y instead"),
+         answer("look at each season as a whole", correct = TRUE),
+         answer("change the colors based on the season"),
+         answer("add more labels"),
+         correct = "Yeah, that would definitely clean up the x-axis a little and consolidate the information. Let's try it!",
+         allow_retry = TRUE)
+```
+
+### Using `summarize()` and `group_by()` to visualize data
+
+Let's sort our episodes by **season** and graph the average rating *per season*. To do this, we can use `mutate()` again to create a new column with the average rating of each season. To get that, we'll use `group_by()` to group the data and follow it with `summarize()` to summarize it (I guess these are pretty self-explanatory).
+
+**Note**: **Do not** end a pipeline with `group_by()`!! Always follow it up with `summarize()`.
+
+For this, we'll look at IMDB rating and the episodes included on IMDB: seasons 1-12
+
+```{r}
+drwho_avg_rating = drwho_comp %>% 
+  group_by(season) %>% # group the entire dataset by `season`
+  summarize(avg_rating = mean(rating.y, na.rm = TRUE)) # adds a new column with average rating per season
+
+```
+
+Now let's graph this.
+
+```{r, warning = FALSE, message = FALSE}
+ggthemr("sky")
+drwho_avg_rating %>% 
+  ggplot(aes(x = season, y = avg_rating)) +
+  geom_point() +
+  labs(x = "Season", y = "", title = "Average IMDB rating of each Doctor Who season", subtitle = "since 2006") +
+  scale_x_continuous(breaks = seq(1, 12, by = 1), labels = c(1:12)) +
+  geom_curve(x = 9, xend = 10.5, y = 6.5, yend = 6.2, arrow = arrow(length = unit(0.04, "inch")), size = 0.5, curvature = 0.55, color = "#f99e93") + 
+  annotate("text", x = 9, y = 6.8, size = 4,
+           label = "Jodie Whittaker\nbecomes the first\nfemale doctor") +
+  theme_minimal()
+```
+
+This is interesting — rating absolutely *plummets* at season 11. One big reason for this is the introduction of the first female doctor, the lead character in the series. Since its inception in 1963, the 12 preceding doctors had all been men. Jodie Whittaker, the first female doctor, has received intense criticism for her role as The Doctor. It's definitely an interesting piece of context to include alongside this graph.
+
+### Exercise 3: Which doctor is the best?
+
+As I mentioned before, there is always a doctor at the center of the series: a Time Lord that uses regeneration energy to exist within different bodies. More than just a convenient way to cycle different actors through this long-running series, this concept is the basis of the entire show. This means that we get a new doctor every few seasons... which means that there's the inevitable debate about which doctor is the best.
+
+```{r mattsmith-q, echo = FALSE}
+question("Who is the best Doctor?",
+         answer("Matt Smith", correct = TRUE),
+         allow_retry = TRUE)
+```
+
+Now that we're on the same page and have established that Matt Smith is the best doctor, let's see how well he did compared to the others!
+
+First, *one more* adjustment to add a column with the doctors in it:
+
+```{r, warning=FALSE, message=FALSE}
+# add a new column to store each of the doctors' names
+drwho_comp$doctor <- c("")
+
+# assign each name to each season or set of seasons
+drwho_comp$doctor[drwho_comp$season == 1] <- "Christopher Eccleston"
+drwho_comp$doctor[drwho_comp$season %in% c(2:4)] <- "David Tennant" 
+drwho_comp$doctor[drwho_comp$season %in% c(5:7)] <- "Matt Smith" 
+drwho_comp$doctor[drwho_comp$season %in% c(8:10)] <- "Peter Capaldi" 
+drwho_comp$doctor[drwho_comp$season %in% c(11:13)] <- "Jodi Whittaker" 
+```
+
+And let's use the `select()` function to choose a few columns from this dataset to look at. This makes it easier to check whether we've done everything right so far since there is less data on our screen:
+
+```{r, warning=FALSE, message=FALSE}
+drwho_comp %>% 
+  select(season_number, episode_title, doctor)
+```
+
+Ok, it looks like everything is all set there!
+
+Now we can look at the data for each doctor! Let's use the `select()` function to get a sense of what we're looking at. Once again, let's make a new dataset to store the `avg_rating` per `doctor`. 
+
+**Your turn**: Can you adjust the pipeline below to find the average rating for each doctor? *Hint*: look at what we did earlier when we calculated the average rating per season!
+
+```{r drwhoavg, exercise = TRUE, exercise.setup = "prepare-drwhoavg"}
+drwho_avg_doctor = drwho_comp %>% 
+  group_by(___) %>% 
+  summarize(___) 
+```
+
+```{r drwhoavg-solution}
+drwho_avg_doctor = drwho_comp %>% 
+  group_by(doctor) %>% 
+  summarize(avg_rating = mean(rating.y, na.rm = TRUE)) 
+```
+
+```{r drwhoavg-code-check}
+grade_code()
+```
+
+### Visualizing this data!
+
+Now that we have the dataset grouped by each doctor's average IMDB rating, let's see how each one fared.
+
+**Note**: We're also useing the `filter()` function here to graph only the 5 doctors we're looking at (i.e., not the `NA` values)
+
+```{r, include = FALSE}
+drwho_avg_doctor = drwho_comp %>% 
+  group_by(doctor) %>% 
+  summarize(avg_rating = mean(rating.y, na.rm = TRUE)) 
+```
+
+
+```{r avgdoc, warning=FALSE, message=FALSE}
+drwho_avg_doctor %>% 
+  filter(doctor %in% c("Christopher Eccleston", "David Tennant", "Matt Smith", "Peter Capaldi", "Jodi Whittaker")) %>% 
+  ggplot(aes(x = fct_reorder(doctor, avg_rating), y = avg_rating, fill = doctor)) +
+  geom_col() +
+  coord_flip() +
+  theme_minimal() +
+  scale_fill_manual(values = c("#1976d2", "#0d47a1", "#bbdefb", "#2196f3", "#64b5f6")) +
+  theme(legend.position = "none") +
+  labs(title = "Average IMDB rating for each doctor in Doctor Who", x = "", y = "")
+
+```
+
+David Tennant is (unsurprisingly) at the top of this list. He's a fan favorite, and one of the hottest debates among Doctor Who fans is whether he or Matt Smith is the better doctor. David Tennant has had some iconic episodes and deserves his spot at the top... even if Matt Smith is closer to my heart.
+
+Anyway, back to the graph. Christopher Eccleston is a surprising second on this list. This might be because he only remained one season while the others stayed for three (it could have been a killer season). Another might be that he played the Doctor in season 1 of the reboot, the first season since the 80s. Nostalgic viewers could have bumped these ratings up for sure.  Yet another reason could be that he's *actually just a great doctor* (which he is; if you couldn't guess already, I love every doctor).
+
+Again, we see Jodi Whittaker's rating stands much lower than every other doctor. The sci-fi community, like many STEM-related communities, is largely male-dominated. When shows as popular and long-standing as Doctor Who replace historically male characters with female actors, male viewers protest (remember the new [Star Wars](https://www.huffpost.com/entry/sexism-star-wars-and-fandom_b_5852aac4e4b0865ab9d4e993?msclkid=1355f982b56011ec994339f5e15dbe8d) reviews?).
+
+### Bonus: Matt Smith vs David Tennant
+
+The two most popular doctors are Matt Smith and David Tennant. Let's use our new **data wrangling skills** to compare the ratings between their episodes! We know that David Tennant's **overall** ratings were better, but maybe it will be interesting to use `first_aired` (original air date of each episode) to see how each did over time.
+
+We'll use `drwho_comp` again and `filter()` to keep *only the rows with Matt Smith or David Tennant*. 
+
+```{r finalgraph, warning=FALSE, message=FALSE}
+drwho_comp %>% 
+  filter(doctor %in% c("David Tennant", "Matt Smith")) %>% 
+  ggplot(aes(x = first_aired, y = rating.y, color = doctor)) +
+  geom_line(size = 0.8, color = "#3f37c9") +
+  facet_wrap(~ doctor, scales = "free_x") +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  labs(title = "David Tennant vs Matt Smith", subtitle = "Episode IMDB rating over time", x = "air date", y = "")
+```
+
+It looks like Matt Smith had a more consistent run while David Tennant had more extreme highs and lows. Overall, it's not very clear who did better. Looking back at their average ratings, they weren't all that different, anyway; David Tennant averaged an 8.1 while Matt Smith averaged a 7.97. 
+
+## Summary
+
+Data wrangling is a rabbit hole that you can travel down forever — especially when you find a great dataset! Thanks for going through this **Doctor Who** dataset and looking at some ways to wrangle your data. This article barely scratches the surface of what's possible in R; as I said before, the possibilities really are endless! Thanks for sticking through to the end and have a fantastic day!
+
+![](https://media.giphy.com/media/Y0s4q0oItnDvCTdvy7/giphy.gif)
+
+
+
+
+
+
+
