@@ -1,7 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=Rubik+Mono+One&display=swap');
+
 html, body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  font-family: "Google Sans", sans-serif;
 }
 
 #banner {
@@ -79,6 +83,7 @@ p, ol {
 
 h1, h2, h3, h4, h5, p, ol {
  /* font-family: "Google Sans", sans-serif;*/
+    font-family: "Google Sans", sans-serif;
 }
 
 h1 {
