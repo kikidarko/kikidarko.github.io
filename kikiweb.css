@@ -24,14 +24,6 @@ html, body {
   margin-right: 20%;
 }
 
-.google-sans-<uniquifier> {
-  font-family: "Google Sans", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
-  font-variation-settings:
-    "GRAD" 0;
-}
 
 .topnav {
 overflow: hidden;
@@ -86,7 +78,7 @@ p, ol {
 }
 
 h1, h2, h3, h4, h5, p, ol {
-  font-family: "Google Sans", sans-serif;
+ /* font-family: "Google Sans", sans-serif;*/
 }
 
 h1 {
