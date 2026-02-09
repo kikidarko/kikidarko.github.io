@@ -50,11 +50,11 @@ padding-bottom: 1.3%;
 
 .topnav a:hover {
 /*color: #8899bb;*/
-  color: #204F30;
+  color: #6eb65f;
 }
 
 .topnav a.selected {
-color: #204F30;
+color: #6eb65f;
 }
 
 .topnav .icon {
@@ -105,11 +105,11 @@ h2 {
 }
 
 .link:hover {
-  color: #204F30;
+  color: #6eb65f;
 }
 
 .projlink {
-  color: #204F30;
+  color: #6eb65f;
   text-decoration: none;
 
 }
@@ -179,7 +179,7 @@ h2 {
 }
 
 .socials a:hover {
-  color: #204F30;
+  color: #6eb65f;
 }
 
 @media (max-width: 1000px) {
