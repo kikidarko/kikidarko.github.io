@@ -24,6 +24,15 @@ html, body {
   margin-right: 20%;
 }
 
+.google-sans-<uniquifier> {
+  font-family: "Google Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+  font-variation-settings:
+    "GRAD" 0;
+}
+
 .topnav {
 overflow: hidden;
 width: 100%;
@@ -82,13 +91,13 @@ h1, h2, h3, h4, h5, p, ol {
 
 h1 {
   font-size: 45px;
-  font-family: Verdana;
+  /*font-family: Verdana;*/
   font-weight: normal;
 }
 
 h2 {
   font-size: 35px;
-  font-family: Verdana;
+/*  font-family: Verdana;*/
   font-weight: normal;
 }
 
@@ -135,7 +144,7 @@ h2 {
   display: block;
   font-size: 20px;
   font-weight: normal;
-  font-family: Arial;
+ /* font-family: Arial;*/
   padding: 1%;
   line-height: 2;
   text-align: left;
@@ -155,7 +164,7 @@ h2 {
   display: block;
   font-size: 20px;
   font-weight: normal;
-  font-family: Arial;
+  /*font-family: Arial;*/
   line-height: 2;
   text-align: left;
 
